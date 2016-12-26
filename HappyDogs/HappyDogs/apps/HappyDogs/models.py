@@ -16,11 +16,14 @@ def parse_date(input_date=None):
 class Dog(models.Model):
     uuid = ShortUUIDField(max_length=255, db_index=False)
     first_name = models.TextField(null=False, blank=False)
-    last_name = models.TextField(null=False, blank=False, default ="")
+    last_name = models.TextField(null=True, blank=True, default ="")
     full_name = models.TextField(null=False, blank=False, unique=True)
 
     class Meta:
         ordering = ['full_name']
+
+    def __str__(self):
+        return self.full_name or "{} {}".format(self.first_name or "", self.last_name or "").strip().upper()
 
     @classmethod
     def add(cls, first_name=None, last_name=None, fetching=False):
@@ -28,7 +31,7 @@ class Dog(models.Model):
         instance = None
         if first_name is not None and first_name.__class__ is str and first_name.strip():
             full_name = "{} {}".format(first_name , last_name or "").strip().upper()
-            instance, created = cls.objects.got_or_create(full_name = full_name)
+            instance, created = cls.objects.get_or_create(full_name = full_name)
             if instance is not None and created:
                 instance.first_name = first_name
                 instance.last_name = last_name
@@ -64,19 +67,19 @@ class Dog(models.Model):
         created = False
         if start_date is None:
             raise Exception('Start Date is a Required Field')
-        elif start_date.__class__ is not Date and start_date.__class__ is str:
+        elif start_date.__class__ is not date and start_date.__class__ is str:
             start_date = parse_date(input_date=start_date)
             if start_date is None:
                 raise Exception('Start Date Field is Wrong Format')
-        elif start_date.__class__ is not Date:
+        elif start_date.__class__ is not date:
             raise Exception('Start Date Field is Wrong Format')
         if end_date is None:
             raise Exception('End Date is a Required Field')
-        elif end_date.__class__ is not Date and end_date.__class__ is str:
+        elif end_date.__class__ is not date and end_date.__class__ is str:
             end_date = parse_date(input_date=end_date)
             if end_date is None:
                 raise Exception('End Date Field is Wrong Format')
-        elif end_date.__class__ is not Date:
+        elif end_date.__class__ is not date:
             raise Exception('End Date Field is Wrong Format')
         visit, created = BoardingVisit.add(dog=self, start_date=start_date, end_date=end_date)
         return visit, created
@@ -86,13 +89,18 @@ class Dog(models.Model):
         dog, dog_created = cls.add(first_name=dog_first_name, last_name=dog_last_name, fetching=True)
         visit = None
         if dog is not None:
-            visit = dog.add_visit(start_date=start_date, end_date=end_date)
+            visit, crated = dog.add_visit(start_date=start_date, end_date=end_date)
         return dog, visit
 
-###TODO
-######ADD SAVE METHOD OVERRIDER TO VALID THAT THE FULL NAME IS NOT DUPLICATED
+    def save(self, *args, **kwargs):
+        full_name = "{} {}".format(self.first_name, self.last_name or "").strip().upper()
+        if self.__class__.objects.all().exclude(uuid = self.uuid).filter(full_name__iexact = full_name).exists():
+            raise Exception('There is another dog with the same name')
+        self.full_name = full_name
+        super(Dog, self).save(*args, **kwargs)
 
 class BoardingVisit(models.Model):
+    uuid = ShortUUIDField(max_length=255, db_index=False)
     dog = models.ForeignKey('Dog', blank=False, null=False, related_name='boarding_visits')
     start_date = models.DateField(blank=False, null=False)
     end_date = models.DateField(blank=False, null=False)
@@ -100,6 +108,8 @@ class BoardingVisit(models.Model):
     class Meta:
         ordering = ['start_date', 'end_date', 'dog']
 
+    def __str__(self):
+        return "Dog: {} : Start Date: {} to End Date: {}".format(self.dog, self.start_date, self.end_date)
 
     @classmethod
     def visits(cls, start_date=None, end_date=None):
@@ -138,13 +148,24 @@ class BoardingVisit(models.Model):
                 visits = cls.dog_visits(dog=dog)
                 if visits is not None:
                     #######HERE COMES THE DATE RANGE FILTERING
-                    return True
+                    #####FIRST LOOK UP FOR ANY VISIT WITHIN THE REQUESTING RANGE
+                    if visits.filter(start_date__range=(start_date, end_date)).exists() and visits.filter(end_date__range=(start_date, end_date)).exists():
+                        return True
+                    #####SECOND LOOK UP FOR ANY VISIT WITHIN THE REQUESTING RANGE
+                    if visits.filter(start_date__lte = start_date , end_date__gte = end_date).exists():
+                        return True
         return False
 
     @classmethod
     def add(cls, dog=None, start_date=None, end_date=None):
         instance = None
         created = False
+        if not cls.dog_has_overlaping_dates(dog=dog, start_date=start_date, end_date=end_date):
+            instance, created = cls.objects.get_or_create(dog=dog, start_date=start_date, end_date=end_date)
+            if instance is not None and not created:
+                raise Exception('This Dog has a overlaping Visit')
+        else:
+            raise Exception('This Dog has a overlaping Visit')
         return instance, created
 
     @classmethod
