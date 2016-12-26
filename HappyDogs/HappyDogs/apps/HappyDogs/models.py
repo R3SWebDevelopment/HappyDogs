@@ -2,16 +2,7 @@ from django.db import models
 from shortuuidfield import ShortUUIDField
 from datetime import date
 import datetime
-INPUT_DATE_FORMAT = '%m/%d/%Y'
-
-def parse_date(input_date=None):
-    date_obj = None
-    if input_date is not None and input_date.__class__ is str:
-        try:
-            date_obj = datetime.datetime.strptime(input_date, INPUT_DATE_FORMAT)
-        except:
-            pass
-    return date_obj
+from utils import parse_date
 
 class Dog(models.Model):
     uuid = ShortUUIDField(max_length=255, db_index=False)
@@ -175,3 +166,19 @@ class BoardingVisit(models.Model):
     @classmethod
     def randomized_boarding(cls):
         cls.clear()
+
+    @classmethod
+    def dogs_in_house(cls, date_obj=None):
+        dogs_in_house = 0
+        if date_obj is not None and date_obj.__class__ is date:
+            filter = cls.objects.filter(start_date__lte=date_obj , end_date__gte=date_obj)
+
+
+#            filter_1 = cls.objects.filter(start_date__gte = date_obj)
+#            filter_2 = cls.objects.filter(end_date__lte=date_obj)
+#            filter = filter_1|filter_2
+#            filter = filter_2.distinct()
+            print "DATE {} - result: {}".format(date_obj, filter)
+            if filter.exists():
+                dogs_in_house = filter.count()
+        return dogs_in_house
