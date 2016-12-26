@@ -4,6 +4,15 @@ from datetime import date
 import datetime
 INPUT_DATE_FORMAT = '%m/%d/%Y'
 
+def parse_date(input_date=None):
+    date_obj = None
+    if input_date is not None and input_date.__class__ is str:
+        try:
+            date_obj = datetime.datetime.strptime(input_date, INPUT_DATE_FORMAT)
+        except:
+            pass
+    return date_obj
+
 class Dog(models.Model):
     uuid = ShortUUIDField(max_length=255, db_index=False)
     first_name = models.TextField(null=False, blank=False)
@@ -56,18 +65,16 @@ class Dog(models.Model):
         if start_date is None:
             raise Exception('Start Date is a Required Field')
         elif start_date.__class__ is not Date and start_date.__class__ is str:
-            try:
-                datetime.datetime.strptime(start_date, INPUT_DATE_FORMAT)
-            except:
+            start_date = parse_date(input_date=start_date)
+            if start_date is None:
                 raise Exception('Start Date Field is Wrong Format')
         elif start_date.__class__ is not Date:
             raise Exception('Start Date Field is Wrong Format')
         if end_date is None:
             raise Exception('End Date is a Required Field')
         elif end_date.__class__ is not Date and end_date.__class__ is str:
-            try:
-                datetime.datetime.strptime(end_date, INPUT_DATE_FORMAT)
-            except:
+            end_date = parse_date(input_date=end_date)
+            if end_date is None:
                 raise Exception('End Date Field is Wrong Format')
         elif end_date.__class__ is not Date:
             raise Exception('End Date Field is Wrong Format')
@@ -92,6 +99,24 @@ class BoardingVisit(models.Model):
 
     class Meta:
         ordering = ['start_date', 'end_date', 'dog']
+
+
+    @classmethod
+    def visits(cls, start_date=None, end_date=None):
+        visits = cls.objects.all()
+        if visits.exists():
+            if start_date is not None:
+                if start_date.__class__ is str:
+                    start_date = parse_date(input_date=start_date)
+                if start_date is not None and start_date.__class__ is date:
+                    visits = visits.filter(start_date__gte = start_date)
+        if visits.exists():
+            if end_date is not None:
+                if end_date.__class__ is str:
+                    end_date = parse_date(input_date=end_date)
+                if end_date is not None and end_date.__class__ is date:
+                    visits = visits.filter(end_date__lte=end_date)
+        return visits
 
     @classmethod
     def dog_has_visit(cls, dog=None):
