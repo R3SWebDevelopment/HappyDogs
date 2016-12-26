@@ -16,6 +16,10 @@ class Dog(models.Model):
     def __str__(self):
         return self.full_name or "{} {}".format(self.first_name or "", self.last_name or "").strip().upper()
 
+    @property
+    def url(self):
+        return ""
+
     @classmethod
     def add(cls, first_name=None, last_name=None, fetching=False):
         created = False
@@ -172,13 +176,21 @@ class BoardingVisit(models.Model):
         dogs_in_house = 0
         if date_obj is not None and date_obj.__class__ is date:
             filter = cls.objects.filter(start_date__lte=date_obj , end_date__gte=date_obj)
-
-
-#            filter_1 = cls.objects.filter(start_date__gte = date_obj)
-#            filter_2 = cls.objects.filter(end_date__lte=date_obj)
-#            filter = filter_1|filter_2
-#            filter = filter_2.distinct()
-            print "DATE {} - result: {}".format(date_obj, filter)
             if filter.exists():
                 dogs_in_house = filter.count()
         return dogs_in_house
+
+    @classmethod
+    def date_visits(cls, date_obj=None):
+        data = cls.objects.none()
+        if date_obj is not None:
+            data = cls.objects.filter(start_date__lte=date_obj, end_date__gte=date_obj)
+        return data
+
+    @property
+    def dog_name(self):
+        return self.dog.full_name or ""
+
+    @property
+    def dog_url(self):
+        return self.dog.url

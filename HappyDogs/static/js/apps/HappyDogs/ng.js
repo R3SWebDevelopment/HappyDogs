@@ -6,12 +6,25 @@ angularApp.controller('HappyDogsHomeCalendar' , [ '$scope' , '$resource' , Happy
 });
 
 function HappyDogsHomeCalendar($scope, $resource , $http){
-    $scope.LoginDisplay = true
+    $scope.LoginDisplay = true;
+    $scope.DetailDisplay = false;
+    $scope.detail_date = '2016/12/12'
 	$scope.HappyDogsHomeCalendarResource = $resource(
 		'/rest/happy_dogs/home_calendar.json' ,
 		{
             start_date : '@start_date' ,
             end_date : '@end_date' ,
+		} ,
+		{
+			get : {
+				method : 'JSON'
+			} ,
+		}
+	);
+	$scope.HappyDogsHomeCalendarDetailResource = $resource(
+		'/rest/happy_dogs/detail_calendar.json' ,
+		{
+            date : '@start_date' ,
 		} ,
 		{
 			get : {
@@ -34,7 +47,19 @@ function HappyDogsHomeCalendar($scope, $resource , $http){
         });
 	};
 	$scope.HappyDogsHomeCalendarShowDetail = function(date, week){
-	    alert(week)
-	    alert(date)
+        $scope.LoginDisplay = true;
+        $scope.DetailDisplay = false;
+        $scope.HappyDogsHomeCalendarDetailResource.get({
+            date : date
+        }).$promise.then(function(data){
+            $scope.DetailDisplay = true;
+            $scope.LoginDisplay = false;
+            $scope.day_detail = data.data.detail;
+        });
 	};
+	$scope.HappyDogsHomeCalendarDetailClose = function(){
+        $scope.DetailDisplay = false;
+        $scope.LoginDisplay = false;
+        $scope.day_detail = null;
+	}
 }

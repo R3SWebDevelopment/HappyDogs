@@ -31,6 +31,28 @@ def happy_dogs_dog(request, dog_uuid=None):
     }
 
 @happy_dogs(template="", content_type="json")
+def happy_dogs_rest_detail(request):
+    detail = []
+    requested_date = request.GET.get('date') or None
+    if requested_date is not None:
+        requested_date = parse_date(input_date = requested_date)
+    if requested_date is not None:
+        data = BoardingVisit.date_visits(date_obj=requested_date)
+        for d in data:
+            detail.append({
+                'dog_name' : d.dog_name,
+                'dog_url' : d.dog_url,
+                'start_date' : d.start_date.strftime('%m/%d/%Y'),
+                'end_date' : d.end_date.strftime('%m/%d/%Y'),
+            })
+    response_data = {
+        'detail' : detail
+    }
+    return{
+        'response_data' : response_data,
+    }
+
+@happy_dogs(template="", content_type="json")
 def happy_dogs_rest_visits(request):
     weeks = []
     start_date = request.GET.get('start_date') or None
