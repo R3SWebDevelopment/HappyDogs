@@ -1,1 +1,177 @@
 {% extends "base.html" %}
+{% load static %}
+{% load angular %}
+
+{% block 'CONTAINER' %}
+    <div class = "row" ng-controller="HappyDogsAdminDog">
+        <div class = "row" ng-show="detailDisplay">
+            <div class = "row">
+                <h3>
+                    DOG DETAIL
+                </h3>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">First Name</label>
+                        <input type="text" class="form-control" id="exampleInputEmail1" placeholder="first_name" ng-model="dogDetail.first_name">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Last Name</label>
+                        <input type="text" class="form-control" id="exampleInputEmail1" placeholder="last_name" ng-model="dogDetail.last_name">
+                </div>
+                <button type="button" class="btn btn-primary" ng-click = "updateDogDetail(dogDetail.uuid)">
+                    Update
+                </button>
+                <button type="button" class="btn btn-primary" ng-click = "closeViewDetail()">
+                    Close
+                </button>
+            </form>
+            <div class = "row">
+                <h3>
+                    Visits
+                </h3>
+            </div>
+            <div class = "row">
+                <div class="table-responsive">
+                    <table class = "table table-bordered">
+                        <thead>
+                            <tr>
+                                <th class = "text-center">
+                                    Start Date
+                                </th>
+                                <th class = "text-center">
+                                    End Date
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="visit in dogDetail.visits">
+                                <td class = "text-center">
+                                    {% ng_output "visit.start_date" %}
+                                </td>
+                                <td>
+                                    {% ng_output "visit.end_date" %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class = "row" ng-show="addVisitDisplay">
+            <div class = "row">
+                <h3>
+                    ADD VISIT
+                </h3>
+            </div>
+            <div class = "row">
+                <div class="col-lg-6">
+                    <div class="input-group">
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button">
+                                Start Date
+                            </button>
+                        </span>
+                        <input type="text" class="form-control date" data-provide="datepicker" placeholder="Start Date" ng-model = "start_date">
+                    </div><!-- /input-group -->
+                </div><!-- /.col-lg-6 -->
+                <div class="col-lg-6">
+                    <div class="input-group">
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button">
+                                End Date
+                            </button>
+                        </span>
+                        <input type="text" class="form-control date" data-provide="datepicker" placeholder="End Date" ng-model = "end_date">
+                    </div><!-- /input-group -->
+                </div><!-- /.col-lg-6 -->
+            </div>
+            <br>
+            <div class = "row">
+                <button type="button" class="btn btn-primary" ng-click = "submitNewDogVisitDetail()">
+                    Add
+                </button>
+                <button type="button" class="btn btn-primary" ng-click = "closeAddVisitDetail()">
+                    Close
+                </button>
+            </div>
+        </div>
+        <div class = "row" ng-show="addDisplay">
+            <div class = "row">
+                <h3>
+                    ADD DOG
+                </h3>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">First Name</label>
+                        <input type="text" class="form-control" id="exampleInputEmail1" placeholder="first_name" ng-model="addDogDetail.first_name">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Last Name</label>
+                        <input type="text" class="form-control" id="exampleInputEmail1" placeholder="last_name" ng-model="addDogDetail.last_name">
+                </div>
+                <button type="button" class="btn btn-primary" ng-click = "submitNewDogDetail()">
+                    Add
+                </button>
+                <button type="button" class="btn btn-primary" ng-click = "closeAddDetail()">
+                    Close
+                </button>
+            </form>
+        </div>
+        <div class = "row" ng-show="listDisplay">
+            <div class = "row" >
+                <button type="button" class="btn btn-primary pull-right" ng-click = "showAddDog()">
+                    Add Dog
+                </button>
+                <div class="clearfix"></div>
+            </div>
+            <br>
+            <div class="table-responsive">
+                <table class = "table table-bordered">
+                    <thead>
+                        <tr>
+                            <th class = "text-center">
+                                Name of the Dog
+                            </th>
+                            <th class = "text-center">
+                                Is in the House Today
+                            </th>
+                            <th class = "text-center">
+                                Number of Visits
+                            </th>
+                            <th>
+
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="dog in dogs">
+                            <td class = "text-center">
+                                <a class = "deactived" ng-click="viewDogDetail(dog.uuid)">
+                                    {% ng_output "dog.full_name" %}
+                                </a>
+                            </td>
+                            <td class = "text-center">
+                                {% ng_output "dog.in_house_label" %}
+                            </td>
+                            <td class = "text-center">
+                                {% ng_output "dog.visits" %}
+                            </td>
+                            <td class = "text-center">
+                                <button class="btn btn-primary" type="button" ng-click="addDogVisit(dog.uuid)">
+                                    Add Visit
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class = "row" ng-show="LoginDisplay">
+            <div class="alert alert-success" role="alert">
+                 <img src="{% static "img/loading.gif" %}" class="img-responsive center-block" alt="Responsive image">
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -31,6 +31,40 @@ def happy_dogs_dog(request, dog_uuid=None):
     }
 
 @happy_dogs(template="", content_type="json")
+def happy_dogs_rest_add_dogs_visit(request):
+    error_message = ""
+    added = False
+    start_date = request.GET.get('start_date') or None
+    if start_date is not None and start_date.strip():
+        start_date = "{}".format(start_date)
+    end_date = request.GET.get('end_date') or None
+    if end_date is not None and end_date.strip():
+        end_date = "{}".format(end_date)
+    uuid = request.GET.get('uuid') or None
+    if uuid is not None and uuid.strip():
+        dog = Dog.objects.filter(uuid = uuid).first()
+        if dog is not None:
+            try:
+                visit, added = dog.add_visit(start_date=start_date, end_date=end_date)
+                saved = True
+            except Exception, e:
+                error_message = "{}".format(e)
+        else:
+            error_message = "Dog not selected"
+    else:
+        error_message = "Dog not selected"
+    data = {
+        'added' : added,
+        'error_message' : error_message,
+    }
+    response_data = {
+        'dog' : data,
+    }
+    return{
+        'response_data' : response_data,
+    }
+
+@happy_dogs(template="", content_type="json")
 def happy_dogs_rest_detail(request):
     detail = []
     requested_date = request.GET.get('date') or None
@@ -47,6 +81,109 @@ def happy_dogs_rest_detail(request):
             })
     response_data = {
         'detail' : detail
+    }
+    return{
+        'response_data' : response_data,
+    }
+
+@happy_dogs(template="", content_type="json")
+def happy_dogs_rest_dogs(request):
+    data = []
+    dogs = Dog.objects.all()
+    for d in dogs:
+        data.append({
+            'full_name' : d.full_name,
+            'url' : d.url,
+            'uuid' : d.uuid,
+            'visits' : d.visits,
+            'in_house' : d.is_the_house(),
+            'in_house_label': d.is_the_house_label(),
+        })
+    response_data = {
+        'dogs' : data,
+    }
+    return{
+        'response_data' : response_data,
+    }
+
+@happy_dogs(template="", content_type="json")
+def happy_dogs_rest_dog(request):
+    data = {}
+    uuid = request.GET.get('uuid') or None
+    if uuid is not None:
+        dog = Dog.objects.filter(uuid = uuid).first()
+        if dog is not None:
+            data = {
+                'full_name' : dog.full_name,
+                'first_name' : dog.first_name,
+                'last_name' : dog.last_name,
+                'url' : dog.url,
+                'uuid' : dog.uuid,
+                'visits' : dog.visits_detail,
+                'in_house' : dog.is_the_house(),
+                'in_house_label': dog.is_the_house_label(),
+            }
+    response_data = {
+        'dog' : data,
+    }
+    return{
+        'response_data' : response_data,
+    }
+
+@happy_dogs(template="", content_type="json")
+def happy_dogs_rest_add_dog(request):
+    error_message = ""
+    added = False
+    first_name = request.GET.get('first_name') or None
+    last_name = request.GET.get('last_name') or None
+    if first_name is not None and first_name.strip():
+        try:
+            dog, added = Dog.add(first_name=first_name , last_name=last_name)
+            saved = True
+        except Exception, e:
+            error_message = "{}".format(e)
+    data = {
+        'added' : added,
+        'error_message' : error_message,
+    }
+    response_data = {
+        'dog' : data,
+    }
+    return{
+        'response_data' : response_data,
+    }
+
+@happy_dogs(template="", content_type="json")
+def happy_dogs_rest_update_dog(request):
+    data = {}
+    uuid = request.GET.get('uuid') or None
+    first_name = request.GET.get('first_name') or None
+    last_name = request.GET.get('last_name') or None
+    error_message = ""
+    saved = False
+    if uuid is not None:
+        dog = Dog.objects.filter(uuid = uuid).first()
+        if first_name is not None and first_name.strip():
+            try:
+                dog = dog.update(first_name = first_name , last_name = last_name)
+                saved = True
+            except Exception,e:
+                error_message = "{}".format(e)
+        if dog is not None:
+            data = {
+                'full_name' : dog.full_name,
+                'first_name' : dog.first_name,
+                'last_name' : dog.last_name,
+                'url' : dog.url,
+                'uuid' : dog.uuid,
+                'visits' : dog.visits_detail,
+                'in_house' : dog.is_the_house(),
+                'in_house_label': dog.is_the_house_label(),
+                'saved' : saved,
+                'error_message' : error_message,
+            }
+    response_data = {
+        'dog' : data,
     }
     return{
         'response_data' : response_data,
@@ -125,29 +262,3 @@ def happy_dogs_rest_visits(request):
     return {
         'response_data' : response_data
     }
-
-@happy_dogs(template="", content_type="json")
-def happy_dogs_rest_visit(request):
-    return {
-    }
-
-@happy_dogs(template="", content_type="json")
-def happy_dogs_est_add_visit(request):
-    return {
-    }
-
-@happy_dogs(template="", content_type="json")
-def happy_dogs_rest_dogs(request):
-    return {
-    }
-
-@happy_dogs(template="", content_type="json")
-def happy_dogs_rest_add_dog(request):
-    return {
-    }
-
-@happy_dogs(template="", content_type="json")
-def happy_dogs_rest_edit_dog(request):
-    return {
-    }
-

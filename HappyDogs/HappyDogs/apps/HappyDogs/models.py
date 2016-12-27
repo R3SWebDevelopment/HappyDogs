@@ -20,11 +20,20 @@ class Dog(models.Model):
     def url(self):
         return ""
 
+    def update(self, first_name=None, last_name=None):
+        if first_name is not None and first_name.strip():
+            self.first_name = first_name
+            self.last_name = last_name
+            self.save()
+            return self
+        else:
+            raise Exception("First Name is a Required Field")
+
     @classmethod
     def add(cls, first_name=None, last_name=None, fetching=False):
         created = False
         instance = None
-        if first_name is not None and first_name.__class__ is str and first_name.strip():
+        if first_name is not None and first_name.strip():
             full_name = "{} {}".format(first_name , last_name or "").strip().upper()
             instance, created = cls.objects.get_or_create(full_name = full_name)
             if instance is not None and created:
@@ -46,16 +55,36 @@ class Dog(models.Model):
             return cls.objects.filter(full_name__iexact = full_name).exists()
         return False
 
-    def is_the_house(self, date=None):
+    def is_the_house(self, date_obj=None):
         visits = self.boarding_visits
         if visits is not None:
-            if date is None:
-                date = date.today()
-            filtered_visits = visits.filter(start_date__lte = date)
+            if date_obj is None:
+                date_obj = date.today()
+            filtered_visits = visits.filter(start_date__lte = date_obj)
             if filtered_visits.exists():
-                filtered_visits = filtered_visits.filter(end_date__gt = date)
+                filtered_visits = filtered_visits.filter(end_date__gt = date_obj)
                 return filtered_visits.exists()
         return False
+
+    def is_the_house_label(self, date_obj=None):
+        if self.is_the_house(date_obj=date_obj):
+            return 'Yes'
+        return 'No'
+
+    @property
+    def visits_detail(self):
+        visits_detail = []
+        visits = self.boarding_visits.all()
+        for visit in visits:
+            visits_detail.append({
+                'start_date' : visit.start_date.strftime('%m/%d/%Y'),
+                'end_date' : visit.end_date.strftime('%m/%d/%Y'),
+            })
+        return visits_detail
+
+    @property
+    def visits(self):
+        return self.boarding_visits.count()
 
     def add_visit(self, start_date=None, end_date=None):
         visit = None
@@ -155,6 +184,9 @@ class BoardingVisit(models.Model):
     def add(cls, dog=None, start_date=None, end_date=None):
         instance = None
         created = False
+        if start_date is not None and end_date is not None:
+            if start_date >= end_date:
+                raise Exception('The Start Date have to be before the End Date')
         if not cls.dog_has_overlaping_dates(dog=dog, start_date=start_date, end_date=end_date):
             instance, created = cls.objects.get_or_create(dog=dog, start_date=start_date, end_date=end_date)
             if instance is not None and not created:
