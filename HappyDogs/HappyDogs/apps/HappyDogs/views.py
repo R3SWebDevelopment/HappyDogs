@@ -7,6 +7,7 @@ from django.db.models import Avg, Max, Min
 from utils import weeks_beetwen
 from utils import parse_date
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 
 
@@ -79,6 +80,7 @@ def happy_dogs_create_data(request):
         'url' : url,
     }
 
+@csrf_exempt
 @happy_dogs(template="", content_type="json")
 def happy_dogs_rest_add_dogs_visit(request):
     error_message = ""
@@ -113,6 +115,7 @@ def happy_dogs_rest_add_dogs_visit(request):
         'response_data' : response_data,
     }
 
+@csrf_exempt
 @happy_dogs(template="", content_type="json")
 def happy_dogs_rest_detail(request):
     detail = []
@@ -135,6 +138,7 @@ def happy_dogs_rest_detail(request):
         'response_data' : response_data,
     }
 
+@csrf_exempt
 @happy_dogs(template="", content_type="json")
 def happy_dogs_rest_dogs(request):
     data = []
@@ -155,6 +159,7 @@ def happy_dogs_rest_dogs(request):
         'response_data' : response_data,
     }
 
+@csrf_exempt
 @happy_dogs(template="", content_type="json")
 def happy_dogs_rest_dog(request):
     data = {}
@@ -179,6 +184,7 @@ def happy_dogs_rest_dog(request):
         'response_data' : response_data,
     }
 
+@csrf_exempt
 @happy_dogs(template="", content_type="json")
 def happy_dogs_rest_add_dog(request):
     error_message = ""
@@ -202,6 +208,7 @@ def happy_dogs_rest_add_dog(request):
         'response_data' : response_data,
     }
 
+@csrf_exempt
 @happy_dogs(template="", content_type="json")
 def happy_dogs_rest_update_dog(request):
     data = {}
@@ -238,6 +245,7 @@ def happy_dogs_rest_update_dog(request):
         'response_data' : response_data,
     }
 
+@csrf_exempt
 @happy_dogs(template="", content_type="json")
 def happy_dogs_rest_visits(request):
     weeks = []
