@@ -135,6 +135,7 @@ STATICFILES_DIRS = (
 )
 
 #STATIC_ROOT = "/root/.virtualenvs/happy_dogs/HappyDogs/HappyDogs/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
