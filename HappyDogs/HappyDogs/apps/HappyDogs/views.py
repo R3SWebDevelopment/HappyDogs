@@ -6,6 +6,7 @@ from datetime import date
 from django.db.models import Avg, Max, Min
 from utils import weeks_beetwen
 from utils import parse_date
+from django.urls import reverse
 
 
 
@@ -28,6 +29,54 @@ def happy_dogs_dogs(request):
 @happy_dogs(template="dogs.html", content_type="html")
 def happy_dogs_dog(request, dog_uuid=None):
     return {
+    }
+
+@happy_dogs(template="dogs.html", content_type="html")
+def happy_dogs_create_dogs(request):
+    url = reverse('happy_dogs_create_dog_visits')
+    Dog.generate_random_dog()
+    return{
+        'redirect' : True,
+        'url' : url,
+    }
+
+@happy_dogs(template="dogs.html", content_type="html")
+def happy_dogs_create_dog_visits(request):
+    buck_size = 10
+    url = reverse('happy_dogs_create_dog_visits')
+    index = request.GET.get('index') or 0
+    data = Dog.objects.all()
+    try:
+        index = int(index)
+    except:
+        index = data.count()
+    if index < data.count():
+        if index + buck_size < data.count():
+            end = index + buck_size
+        else:
+            end = data.count() - 1
+        dogs = data[index:end]
+        for dog in dogs:
+            dog.generate_random_visit
+        index = end
+    index += 1
+    if index < data.count():
+        url = "{}?index={}".format(url, index)
+    else:
+        url = reverse('happy_dogs_home')
+    return{
+        'redirect' : True,
+        'url' : url,
+    }
+
+@happy_dogs(template="dogs.html", content_type="html")
+def happy_dogs_create_data(request):
+    url = reverse('happy_dogs_create_dogs')
+    Dog.clear()
+    BoardingVisit.clear()
+    return{
+        'redirect' : True,
+        'url' : url,
     }
 
 @happy_dogs(template="", content_type="json")

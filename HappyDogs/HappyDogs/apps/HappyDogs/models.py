@@ -2,13 +2,165 @@ from django.db import models
 from shortuuidfield import ShortUUIDField
 from datetime import date
 import datetime
-from utils import parse_date
+from utils import parse_date , generate_weekend_list_of_range , generate_holidays_list , generate_day_list_of_range
+from random import randint
+from datetime import timedelta
+
+
+LAST_NAME = [
+    'SMITH',
+    'JOHNSON',
+    'WILLIAMS',
+    'BROWN',
+    'JONES',
+    'MILLER',
+    'DAVIS',
+    'GARCIA',
+    'RODRIGUEZ',
+    'WILSON',
+    'MARTINEZ',
+    'ANDERSON',
+    'TAYLOR',
+    'THOMAS',
+    'HERNANDEZ',
+    'MOORE',
+    'MARTIN',
+    'JACKSON',
+    'THOMPSON',
+    'WHITE',
+    'LOPEZ',
+    'LEE',
+    'GONZALEZ',
+    'HARRIS',
+    'CLARK',
+    'LEWIS',
+    'ROBINSON',
+    'WALKER',
+    'PEREZ',
+    'HALL',
+    'YOUNG',
+    'ALLEN',
+    'SANCHEZ',
+    'WRIGHT',
+    'KING',
+    'SCOTT',
+    'GREEN',
+    'BAKER',
+    'ADAMS',
+    'NELSON',
+    'HILL',
+    'RAMIREZ',
+    'CAMPBELL',
+    'MITCHELL',
+    'ROBERTS',
+    'CARTER',
+    'PHILLIPS',
+    'EVANS',
+    'TURNER',
+    'TORRES',
+]
+
+DOG_NAMES = [
+    'Gus',
+    'Trapper',
+    'Finn',
+    'Cooper',
+    'Bailey',
+    'Boomer',
+    'Otto',
+    'Hawkeye',
+    'Wrigley',
+    'Ace',
+    'Butch',
+    'Lucky',
+    'Axel',
+    'Gunner',
+    'Diesel',
+    'Delgado',
+    'Max',
+    'Evan',
+    'Buddy',
+    'Ricky',
+    'Bentley',
+    'Czar',
+    'Chad',
+    'Coco',
+    'AJ',
+    'Rocky',
+    'Jake',
+    'Maximus',
+    'CJ',
+    'Moose',
+    'Dodge',
+    'Charlie',
+    'Cody',
+    'Dexter',
+    'Bear',
+    'Jack',
+    'Angus',
+    'Spencer',
+    'Otis',
+    'Brody',
+    'Tucker',
+    'Blue',
+    'Amos',
+    'Sam',
+    'Blitzen',
+    'Biscuit',
+    'Fritz',
+    'Grommit',
+    'Emmet',
+    'Shamus',
+]
+
+WEEKDEND_DAYS = generate_weekend_list_of_range(start_date = '1/1/2016' , end_date = '12/31/2016')
+HOLIDAY_DAYS = generate_holidays_list()
+NORMAL_DAYS = generate_day_list_of_range(start_date = '1/1/2016' , end_date = '12/31/2016')
+
+
 
 class Dog(models.Model):
     uuid = ShortUUIDField(max_length=255, db_index=False)
     first_name = models.TextField(null=False, blank=False)
     last_name = models.TextField(null=True, blank=True, default ="")
     full_name = models.TextField(null=False, blank=False, unique=True)
+
+    @classmethod
+    def clear(cls):
+        cls.objects.all().delete()
+
+    @classmethod
+    def generate_random_dog(cls):
+        number_of_dogs = randint(20, 100)
+        for i in range(1,number_of_dogs):
+            first_name = DOG_NAMES[randint(0, len(DOG_NAMES)-1 )]
+            last_name = LAST_NAME[randint(0, len(LAST_NAME)-1 )]
+            try:
+                dog,created = cls.add(first_name=first_name, last_name=last_name)
+            except:
+                pass
+
+    @property
+    def generate_random_visit(self):
+        visit_number = randint(1, 5)
+        for v in range(1, visit_number):
+            option = randint(1, 10)
+            if option in [1 , 4 , 7 , 9 , 10]:#####WEEKEND
+                start_date = WEEKDEND_DAYS[randint(0, len(WEEKDEND_DAYS)-1)]
+            elif option in [2 , 5, 8 ]:
+                start_date = HOLIDAY_DAYS[randint(0, len(HOLIDAY_DAYS) - 1)]
+            elif option in [3 , 6]:
+                start_date = NORMAL_DAYS[randint(0, len(NORMAL_DAYS) - 1)]
+            else:
+                start_date = None
+            if start_date is not None:
+                days = randint(3, 10)
+                delta = timedelta(days=days)
+                end_date = start_date + delta
+                try:
+                    self.add_visit(start_date=start_date, end_date=end_date)
+                except Exception,e:
+                    pass
 
     class Meta:
         ordering = ['full_name']
@@ -197,7 +349,7 @@ class BoardingVisit(models.Model):
 
     @classmethod
     def clear(cls):
-        cls.object.all().delete()
+        cls.objects.all().delete()
 
     @classmethod
     def randomized_boarding(cls):
