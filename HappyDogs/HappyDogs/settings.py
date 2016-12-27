@@ -126,11 +126,15 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
+#STATICFILES_DIRS = [
+#    os.path.join(BASE_DIR, "static"),
+#]
 
-STATIC_ROOT = "/root/.virtualenvs/happy_dogs/HappyDogs/HappyDogs/static/"
+STATICFILES_DIRS = (
+  os.path.join(BASE_DIR, 'static'),
+)
+
+#STATIC_ROOT = "/root/.virtualenvs/happy_dogs/HappyDogs/HappyDogs/static/"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
