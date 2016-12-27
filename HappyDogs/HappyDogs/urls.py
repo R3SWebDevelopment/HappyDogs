@@ -7,4 +7,4 @@ urlpatterns = [
     url(r'^$', happy_dogs_home , name='index'),
     url(r'^happy_dogs/', include('HappyDogs.apps.HappyDogs.urls')),
     url(r'^rest/happy_dogs/', include('HappyDogs.apps.HappyDogs.rest_urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
